@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Модуль 1 · Урок 1 — Живой французский с нуля</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Lora:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-paper: #FAF6EE;
+      --card-surface: #FFFDF9;
+      --card-line: #EFE9DC;
+      --border-soft: #E2D9C8;
+      --ink-primary: #141E30;
+      --ink-secondary: #525D70;
+      --ink-muted: #848E9F;
+      --brand-blue: #183B8C;
+      --brand-blue-hover: #122E6E;
+      --brand-terracotta: #E0533C;
+      --badge-lime: #D2F48D;
+      --success-green: #166534;
+      --success-bg: #DCFCE7;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-paper);
+      color: var(--ink-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    .font-serif-editorial {
+      font-family: 'Lora', Georgia, serif;
+    }
+
+    .font-mono-ipa {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Контейнер адаптивный под все экраны */
+    .app-shell {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 16px 16px calc(32px + env(safe-area-inset-bottom));
+    }
+
+    @media (min-width: 768px) {
+      .app-shell {
+        padding: 28px 32px 48px;
+      }
+    }
+
+    /* Тетрадный лист в линейку */
+    .notebook-paper {
+      background-color: var(--card-surface);
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 35px,
+        var(--card-line) 36px
+      );
+      background-position: 0 18px;
+      border: 1.5px solid var(--border-soft);
+      border-radius: 22px;
+      box-shadow: 0 12px 32px -12px rgba(20, 30, 48, 0.08);
+    }
+
+    /* Кнопки в фирменной эстетике */
+    .btn-primary {
+      background-color: var(--brand-blue);
+      color: #FFFFFF;
+      border: 1.5px solid var(--brand-blue);
+      border-radius: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.12s ease, background-color 0.15s ease;
+    }
+    .btn-primary:hover { background-color: var(--brand-blue-hover); }
+    .btn-primary:active { transform: scale(0.97); }
+
+    .btn-secondary {
+      background-color: var(--card-surface);
+      color: var(--ink-primary);
+      border: 1.5px solid var(--border-soft);
+      border-radius: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.15s ease, background-color 0.15s ease;
+    }
+    .btn-secondary:hover {
+      border-color: #C9BEA9;
+      background-color: #F6F0E4;
+    }
+    .btn-secondary:active { transform: scale(0.97); }
+
+    /* Сетка маршрута под все 4 форм-фактора */
+    .route-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr)); /* Смартфоны и внешний экран раскладушки */
+      gap: 12px;
+    }
+
+    /* Раскладные телефоны в открытом виде (600-840px) и планшеты */
+    @media (min-width: 600px) {
+      .route-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+    }
+
+    /* Десктоп */
+    @media (min-width: 1100px) {
+      .route-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+    }
+
+    .route-card {
+      background: var(--card-surface);
+      border: 1.5px solid var(--border-soft);
+      border-radius: 16px;
+      padding: 14px 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 98px;
+    }
+
+    .route-card:hover:not(.locked) {
+      border-color: #B9AE99;
+      transform: translateY(-1px);
+    }
+
+    .route-card.active {
+      border: 2px solid var(--brand-blue);
+      box-shadow: 3px 4px 0px var(--brand-blue);
+    }
+
+    .route-card.completed {
+      border-color: #86EFAC;
+      background: #F8FDF9;
+    }
+
+    .route-card.locked {
+      opacity: 0.65;
+      cursor: not-allowed;
+      background: #F3EDE1;
+    }
+
+    /* 3D-переворот карточки */
+    .card-stage {
+      perspective: 1200px;
+      width: 100%;
+    }
+
+    .card-flipper {
+      position: relative;
+      width: 100%;
+      min-height: 330px;
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      transform-style: preserve-3d;
+      cursor: pointer;
+    }
+
+    @media (min-width: 600px) {
+      .card-flipper {
+        min-height: 310px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .card-flipper {
+        min-height: 340px;
+      }
+    }
+
+    .card-flipper.is-flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (min-width: 768px) {
+      .card-face {
+        padding: 32px 36px;
+      }
+    }
+
+    .card-face-front {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .card-face-back {
+      transform: rotateY(180deg);
+      justify-content: space-between;
+      text-align: left;
+      overflow-y: auto;
+    }
+
+    /* Адаптивная панель кнопок под карточкой */
+    .action-dock {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    /* На обычных узких смартфонах кнопка "Выучил" переходит на 2-й ряд по центру под большой палец */
+    @media (max-width: 599px) {
+      .action-dock .btn-know-wrap {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-top: 2px;
+      }
+      .action-dock .btn-know-wrap button {
+        min-width: 180px;
+      }
+    }
+
+    /* На раскладушках (600-840px), планшетах и ПК все кнопки в 1 строку */
+    @media (min-width: 600px) {
+      .action-dock {
+        flex-wrap: nowrap;
+        gap: 14px;
+      }
+      .action-dock .btn-know-wrap {
+        width: auto;
+      }
+    }
+
+    /* Фильтры и пилюли */
+    .pill-btn {
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1.5px solid var(--border-soft);
+      background: var(--card-surface);
+      color: var(--ink-primary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .pill-btn.active {
+      background: var(--brand-blue);
+      color: #FFFFFF;
+      border-color: var(--brand-blue);
+    }
+
+    /* Анимация встряски при незачёте */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+    .shake {
+      animation: shake 0.35s ease;
+    }
+
+    /* Модальное окно */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 30, 48, 0.55);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+    .modal-backdrop.open {
+      display: flex;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-shell">
+    <!-- Верхняя навигационная панель -->
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:18px; flex-wrap:wrap;">
+      <div style="display:inline-flex; align-items:center; gap:8px; background:var(--badge-lime); color:var(--ink-primary); padding:6px 14px; border-radius:999px; font-size:12px; font-weight:700; letter-spacing:0.03em;">
+        <span>📖</span>
+        <span>МОДУЛЬ 1 · УРОК 1 · 2 СПРИНТА</span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px;">
+        <!-- Переключатель тарифа для тестирования слота PRO 85% -->
+        <button id="btnToggleProMode" type="button" class="pill-btn" style="font-size:12px; display:flex; align-items:center; gap:6px;" title="Переключить режим для проверки платного AI-репетитора">
+          <span id="proStatusDot" style="width:8px; height:8px; border-radius:50%; background:#94A3B8;"></span>
+          <span id="proStatusLabel">Тариф: Базовый</span>
+        </button>
+
+        <button id="btnBackToOverview" type="button" class="pill-btn" style="display:none; font-weight:600;">
+          ☰ Маршрут
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- ЭКРАН 1: ОБЛОЖКА УРОКА И МАРШРУТ (HERO + ROUTE)          -->
+    <!-- ========================================================= -->
+    <section id="viewOverview">
+      <div style="display:grid; grid-template-columns: 1fr; gap:24px; margin-bottom:32px;" id="heroGrid">
+        <div>
+          <h1 class="font-serif-editorial" style="font-size:clamp(34px, 6vw, 54px); line-height:1.08; margin:0 0 16px; font-weight:700; color:var(--ink-primary);">
+            Bonjour ! <span style="color:var(--brand-terracotta); font-style:italic;">Ça va ?</span><br>
+            Код чтения и первый контакт
+          </h1>
+
+          <p style="font-size:16px; line-height:1.6; color:var(--ink-secondary); max-width:600px; margin:0 0 24px;">
+            Два лёгких спринта по 20 минут: первые 10 букв алфавита (A–J), правила чтения, счёт 1–10 и 8 живых разговорных фраз без школьной зубрёжки. Чтобы открыть <strong>Урок 2</strong>, отправьте все 38 карточек в архив в финальном тесте.
+          </p>
+
+          <!-- Кнопки старта -->
+          <div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+            <button id="btnStartSprint1" type="button" class="btn-primary" style="padding:14px 26px; font-size:15px;">
+              Начать с Спринта 1
+            </button>
+            <button id="btnStartFinalTest" type="button" class="btn-secondary" style="padding:14px 24px; font-size:15px;">
+              Финальный тест (<span id="overviewArchiveCount">0</span>/38)
+            </button>
+          </div>
+
+          <!-- Превью диалога сборки в стиле Cahier -->
+          <div class="notebook-paper" style="padding:20px 22px; max-width:560px;">
+            <div style="font-size:12px; font-weight:700; color:var(--ink-muted); margin-bottom:10px; letter-spacing:0.04em;">
+              Cahier de Camille & Max · Диалог сборки
+            </div>
+            <div style="font-size:16px; line-height:1.85; color:var(--ink-primary);" class="font-serif-editorial">
+              <div>👋 — Salut ! Moi, c'est <span style="border-bottom:2px solid var(--brand-terracotta);">Camille</span>. Et toi ?</div>
+              <div>🤝 — Salut ! Moi, c'est Max. <span style="border-bottom:2px solid var(--brand-blue);">Enchanté</span> !</div>
+              <div>☕ — Ça va bien, merci ! <span style="border-bottom:2px solid var(--brand-terracotta);">Deux cafés</span>, s'il vous plaît.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Сетка Маршрута -->
+      <div style="margin-top:8px;">
+        <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px;">
+          <h2 class="font-serif-editorial" style="font-size:26px; margin:0; font-weight:700;">Маршрут</h2>
+          <span style="font-size:13px; color:var(--ink-secondary); font-weight:500;">
+            В архиве: <strong id="routeArchiveSummary" style="color:var(--brand-blue);">0 / 38</strong>
+          </span>
+        </div>
+
+        <div class="route-grid" id="routeGridContainer">
+          <!-- Генерируется скриптом -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- ЭКРАН 2: ТРЕНАЖЁР КАРТОЧЕК И ФИНАЛЬНЫЙ ТЕСТ               -->
+    <!-- ========================================================= -->
+    <section id="viewTrainer" style="display:none;">
+      <!-- Заголовок активного шага -->
+      <div style="margin-bottom:14px;">
+        <div id="stepBadge" style="font-size:13px; font-weight:700; color:var(--brand-terracotta); margin-bottom:4px;">
+          Шаг 01 · Спринт 1
+        </div>
+        <h2 id="stepTitle" class="font-serif-editorial" style="font-size:clamp(24px, 4.5vw, 34px); margin:0 0 6px; font-weight:700;">
+          Алфавит: первые 10 букв (A–J)
+        </h2>
+        <p id="stepSubtitle" style="font-size:14px; color:var(--ink-secondary); margin:0; line-height:1.5;">
+          Нажмите на карточку, чтобы увидеть разбор. «Ещё повторить» возвращает карточку через 3 шага.
+        </p>
+      </div>
+
+      <!-- Панель фильтров и управления колодой (в режиме обучения) -->
+      <div id="studyControlsBar" style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+        <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:2px;" id="categoryPills">
+          <button type="button" class="pill-btn active" data-filter="all">Все (38)</button>
+          <button type="button" class="pill-btn" data-filter="alphabet">Алфавит (10)</button>
+          <button type="button" class="pill-btn" data-filter="phonetics">Фонетика (10)</button>
+          <button type="button" class="pill-btn" data-filter="numbers">Цифры 1–10 (10)</button>
+          <button type="button" class="pill-btn" data-filter="chunks">Чанки (8)</button>
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="btnDirectionToggle" type="button" class="pill-btn" style="font-weight:600;">
+            ⇄ FR → RU
+          </button>
+          <button id="btnShuffle" type="button" class="pill-btn" style="font-weight:600;">
+            ↻ Перемешать
+          </button>
+        </div>
+      </div>
+
+      <!-- Баннер режима Финального теста -->
+      <div id="testModeBanner" style="display:none; background:#FFF4ED; border:1.5px solid #FDBA74; border-radius:14px; padding:12px 16px; margin-bottom:14px; font-size:13px; color:#7C2D12; line-height:1.45;">
+        <strong>🎯 Финальный тест без перевода:</strong> назовите букву, цифру, правило или фразу вслух. Если забыли — нажмите <strong>«🔊 Произношение»</strong>. Отправляйте в архив кнопкой <strong>«✓ Выучил»</strong> только то, что знаете уверенно.
+      </div>
+
+      <!-- Шкала прогресса -->
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+        <div style="flex:1; height:8px; background:#E4DDD0; border-radius:999px; overflow:hidden;">
+          <div id="progressBarFill" style="height:100%; width:0%; background:var(--brand-blue); border-radius:999px; transition:width 0.3s ease;"></div>
+        </div>
+        <div id="progressCounterText" style="font-size:13px; font-weight:600; color:var(--ink-secondary); white-space:nowrap;">
+          0 / 10 выучил
+        </div>
+      </div>
+
+      <!-- Область карточек (Шаги 01-04 и 06) -->
+      <div id="flashcardWorkspace">
+        <div class="card-stage" id="swipeZone">
+          <div id="cardFlipper" class="card-flipper notebook-paper">
+            <!-- ЛИЦЕВАЯ СТОРОНА -->
+            <div class="card-face card-face-front">
+              <div id="cardCategoryTag" style="position:absolute; top:16px; left:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--brand-terracotta);">
+                Спринт 1 · Алфавит
+              </div>
+              <div id="cardIndexTag" style="position:absolute; top:16px; right:20px; font-size:12px; font-weight:600; color:var(--ink-muted);" class="font-mono-ipa">
+                01 / 10
+              </div>
+
+              <div id="cardFrontSub" style="font-size:14px; font-weight:600; color:var(--brand-terracotta); margin-bottom:8px;">
+                Буква и главный звук
+              </div>
+
+              <div id="cardFrontMain" class="font-serif-editorial" style="font-size:clamp(28px, 6vw, 44px); font-weight:700; color:var(--ink-primary); line-height:1.2; margin-bottom:10px; max-width:92%;">
+                A a — [a]
+              </div>
+
+              <div id="cardFrontExample" style="font-size:17px; font-weight:600; color:var(--brand-blue); margin-bottom:4px;">
+                À plus !
+              </div>
+
+              <div id="cardFrontIpa" class="font-mono-ipa" style="font-size:14px; color:var(--ink-secondary); margin-bottom:14px;">
+                /a plys/
+              </div>
+
+              <!-- Слот обратной связи AI-репетитора (порог 85%) -->
+              <div id="voiceFeedbackSlot" style="display:none; width:100%; max-width:460px; padding:10px 14px; border-radius:12px; font-size:13px; line-height:1.4; margin-top:4px; text-align:left;"></div>
+
+              <div id="flipHintText" style="position:absolute; bottom:16px; font-size:13px; color:var(--ink-muted); font-weight:500;">
+                Нажмите, чтобы перевернуть
+              </div>
+            </div>
+
+            <!-- ОБОРОТНАЯ СТОРОНА -->
+            <div class="card-face card-face-back">
+              <div>
+                <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--brand-blue); margin-bottom:4px;">
+                  Перевод и значение
+                </div>
+                <div id="cardBackTranslation" class="font-serif-editorial" style="font-size:clamp(20px, 4vw, 26px); font-weight:700; color:var(--ink-primary); margin-bottom:16px; line-height:1.3;">
+                  До скорого! / Увидимся!
+                </div>
+
+                <div style="background:#F7F1E5; border:1px solid var(--border-soft); border-radius:14px; padding:12px 14px; margin-bottom:10px;">
+                  <div style="font-size:11px; font-weight:700; color:var(--brand-terracotta); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">
+                    💡 Разговорный фокус
+                  </div>
+                  <div id="cardBackColloquial" style="font-size:14px; line-height:1.5; color:var(--ink-primary);">
+                    Главный неформальный способ попрощаться со знакомыми.
+                  </div>
+                </div>
+
+                <div style="background:#EEF2FF; border:1px solid #C7D2FE; border-radius:14px; padding:12px 14px;">
+                  <div style="font-size:11px; font-weight:700; color:var(--brand-blue); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">
+                    📚 Правило чтения / Грамматика
+                  </div>
+                  <div id="cardBackRule" style="font-size:14px; line-height:1.5; color:var(--ink-primary);">
+                    Читается открыто и чётко как «а», даже в безударном слоге.
+                  </div>
+                </div>
+              </div>
+
+              <div style="text-align:center; font-size:12px; color:var(--ink-muted); padding-top:10px;">
+                Нажмите на карточку, чтобы вернуть лицевую сторону
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Нижняя панель кнопок управления -->
+        <div class="action-dock">
+          <!-- Озвучка + выбор скорости -->
+          <div style="display:inline-flex; align-items:center; gap:6px;">
+            <button id="btnAudioPlay" type="button" style="background:none; border:none; padding:10px 12px; font-size:15px; font-weight:600; color:var(--ink-primary); cursor:pointer; display:inline-flex; align-items:center; gap:7px; border-radius:12px;">
+              <span style="font-size:18px;">🔊</span>
+              <span>Произношение</span>
+            </button>
+            <button id="btnSpeechRate" type="button" class="pill-btn font-mono-ipa" style="padding:5px 9px; font-size:12px;" title="Скорость озвучки">
+              0.85x
+            </button>
+          </div>
+
+          <!-- Зарезервированный слот: Платный AI-репетитор произношения (порог 85%) -->
+          <button id="btnProVoiceCheck" type="button" class="btn-secondary" style="padding:11px 16px; font-size:14px; display:inline-flex; align-items:center; gap:7px; border-color:#CBD5E1;">
+            <span>🎙️</span>
+            <span id="proBtnLabel">PRO · 85%</span>
+          </button>
+
+          <!-- Кнопка возврата в очередь ("Ещё повторить" / "Учить") -->
+          <button id="btnRepeatAgain" type="button" class="btn-secondary" style="padding:11px 18px; font-size:14px; display:inline-flex; align-items:center; gap:7px;">
+            <span>↻</span>
+            <span id="repeatBtnLabel">Ещё повторить</span>
+          </button>
+
+          <!-- Кнопка подтверждения ("Выучил") -->
+          <div class="btn-know-wrap">
+            <button id="btnMarkLearned" type="button" class="btn-primary" style="padding:12px 24px; font-size:15px; display:inline-flex; align-items:center; gap:7px;">
+              <span>✓</span>
+              <span>Выучил</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Экран завершения колоды / Финального теста -->
+      <div id="deckCompleteBox" class="notebook-paper" style="display:none; padding:32px 24px; text-align:center; margin-top:12px;">
+        <div style="font-size:42px; margin-bottom:10px;">🎉</div>
+        <h3 id="completeTitle" class="font-serif-editorial" style="font-size:26px; margin:0 0 10px;">
+          Этап пройден!
+        </h3>
+        <p id="completeDesc" style="font-size:15px; color:var(--ink-secondary); max-width:480px; margin:0 auto 22px; line-height:1.55;">
+          Отличная работа! Все карточки этого блока отработаны.
+        </p>
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:12px;">
+          <button id="btnNextStepAction" type="button" class="btn-primary" style="padding:13px 24px; font-size:15px;">
+            Перейти к следующему шагу →
+          </button>
+          <button id="btnRestartCurrentStep" type="button" class="btn-secondary" style="padding:13px 20px; font-size:14px;">
+            ↻ Пройти заново
+          </button>
+        </div>
+      </div>
+
+      <!-- Рабочая зона Шага 05: Диалог сборки -->
+      <div id="dialogueWorkspace" class="notebook-paper" style="display:none; padding:24px 20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:18px; border-bottom:1px solid var(--border-soft); padding-bottom:12px;">
+          <div>
+            <div style="font-size:12px; font-weight:700; color:var(--brand-terracotta); text-transform:uppercase;">Живая сцена · Знакомство и кофе</div>
+            <div style="font-size:14px; color:var(--ink-secondary); margin-top:2px;">Нажимайте на любую реплику, чтобы прослушать и повторить за диктором</div>
+          </div>
+          <button id="btnPlayFullDialogue" type="button" class="btn-primary" style="padding:10px 18px; font-size:14px;">
+            🔊 Слушать весь диалог
+          </button>
+        </div>
+
+        <div id="dialogueLinesContainer" style="display:flex; flex-direction:column; gap:14px;">
+          <!-- Генерируется скриптом -->
+        </div>
+
+        <div style="margin-top:24px; display:flex; justify-content:flex-end;">
+          <button id="btnDialogueToTest" type="button" class="btn-primary" style="padding:13px 24px; font-size:15px;">
+            Перейти к Финальному тесту (38 карточек) →
+          </button>
+        </div>
+      </div>
+
+      <!-- Нижняя навигация между шагами (как на мобильном скриншоте) -->
+      <div style="border-top:1px solid var(--border-soft); margin-top:28px; padding-top:16px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <button id="btnPrevStepFooter" type="button" style="background:none; border:none; font-size:15px; font-weight:600; color:var(--ink-secondary); cursor:pointer; padding:8px 12px;">
+          ← Назад
+        </button>
+
+        <button id="btnNextStepFooter" type="button" class="btn-secondary" style="padding:10px 18px; font-size:14px;">
+          Следующий шаг →
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- МОДАЛЬНОЕ ОКНО: ДОППРОДАЖА / AI-РЕПЕТИТОР PRO (85%)        -->
+  <!-- ========================================================= -->
+  <div id="proModal" class="modal-backdrop">
+    <div style="background:var(--card-surface); border:2px solid var(--brand-blue); border-radius:22px; max-width:440px; width:100%; padding:24px; box-shadow:0 24px 48px rgba(20,30,48,0.25);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <span style="background:#DBEAFE; color:var(--brand-blue); font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px; letter-spacing:0.05em;">
+          AI-РЕПЕТИТОР · PRO VOICE
+        </span>
+        <button id="btnCloseProModal" type="button" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--ink-muted);">✕</button>
+      </div>
+
+      <h3 class="font-serif-editorial" style="font-size:24px; margin:0 0 10px; line-height:1.25;">
+        Персональный контроль произношения (порог 85%)
+      </h3>
+
+      <p style="font-size:14px; color:var(--ink-secondary); line-height:1.55; margin:0 0 14px;">
+        В тарифе <strong>PRO</strong> AI-репетитор слушает ваш голос через микрофон, сверяет артикуляцию с эталоном носителя и ставит зачёт только при точности от <strong>85%</strong>:
+      </p>
+
+      <ul style="font-size:13px; color:var(--ink-primary); line-height:1.6; padding-left:18px; margin:0 0 18px;">
+        <li>Отличает французский грассирующий <strong>[ʁ]</strong> от твёрдого русского «р».</li>
+        <li>Проверяет носовые гласные (<em>Bonjour, Comment, Un</em>) и немые окончания.</li>
+        <li>Даёт короткую подсказку в 1 предложение, как исправить звук.</li>
+      </ul>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button id="btnActivateProDemo" type="button" class="btn-primary" style="padding:12px 18px; font-size:14px; width:100%;">
+          Включить демо-режим PRO 85% для проверки
+        </button>
+        <button id="btnCancelProModal" type="button" class="btn-secondary" style="padding:10px 18px; font-size:13px; width:100%;">
+          Продолжить на Базовом тарифе
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. ИНИЦИАЛИЗАЦИЯ TELEGRAM WEBAPP И HAPTIC FEEDBACK
+    // =========================================================================
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      try {
+        tg.expand();
+        tg.ready();
+      } catch (e) {}
+    }
+
+    function triggerHaptic(type) {
+      try {
+        if (!tg?.HapticFeedback) return;
+        if (type === 'success' || warningOrError(type)) {
+          tg.HapticFeedback.notificationOccurred(type);
+        } else {
+          tg.HapticFeedback.impactOccurred(type);
+        }
+      } catch (e) {}
+    }
+    function warningOrError(t) { return t === 'warning' || t === 'error'; }
+
+    // =========================================================================
+    // 2. КОНФИГУРАЦИЯ ELEVENLABS И СЛОТ ПЛАТНОГО AI-РЕПЕТИТОРА (ПОРОГ 85%)
+    // =========================================================================
+    const ELEVENLABS_CONFIG = {
+      enabled: false, // Поставьте true после добавления ключа
+      apiKey: "",     // Ваш ключ ElevenLabs
+      voiceId: "21m00Tcm4TlvDq8ikWAM", // ID французского голоса
+      modelId: "eleven_multilingual_v2"
+    };
+
+    const PASS_THRESHOLD = 85;
+    let userHasProVoice = false; // Флаг доппродажи (false = Базовый, true = PRO Voice 85%)
+
+    /**
+     * Зарезервированный адаптер для AI-проверки произношения (Groq Whisper + Phonetic Auditor).
+     * Сейчас работает с демо-симуляцией при включённом тумблере PRO, позже подключается к API.
+     */
+    async function evaluatePronunciation(targetCard, isProEnabled) {
+      if (!isProEnabled) {
+        return { locked: true };
+      }
+
+      // TODO (Этап подключения API): запись с MediaRecorder -> отправка на сервер анализа фонем
+      // Симуляция проверки с порогом 85% для демонстрации механики:
+      await new Promise(resolve => setTimeout(resolve, 950));
+      const simulatedScore = Math.random() > 0.35 ? Math.floor(86 + Math.random() * 12) : Math.floor(68 + Math.random() * 14);
+      const passed = simulatedScore >= PASS_THRESHOLD;
+
+      let hint = "Отличная артикуляция и точный ритм фразы!";
+      if (!passed) {
+        if (/r|bonjour|rien|journée|trois|quatre/i.test(targetCard.audioText)) {
+          hint = "Звук [r] прозвучал слишком твёрдо по-русски — смягчите его у основания нёба.";
+        } else if (/on|an|en|un|cinq|comment/i.test(targetCard.audioText)) {
+          hint = "Не проговаривайте букву «n» кончиком языка — направьте звук в нос.";
+        } else {
+          hint = "Проверьте ударение на последний слог и не произносите немую букву на конце.";
+        }
+      }
+
+      return {
+        locked: false,
+        score: simulatedScore,
+        passed,
+        feedback: hint
+      };
+    }
+
+    // =========================================================================
+    // 3. БАЗА ДАННЫХ УРОКА 1 (38 КАРТОЧЕК: 2 СПРИНТА ПО 20 МИНУТ)
+    // =========================================================================
+    const LESSON_1_CARDS = [
+      // --- СПРИНТ 1 · ШАГ 01: АЛФАВИТ A–J (10 КАРТОЧЕК) ---
+      {
+        id: "l1_01", sprint: 1, category: "alphabet", categoryLabel: "Спринт 1 · Алфавит",
+        frontSub: "Буква и главный звук", frontMain: "A a — [a] («а»)",
+        example: "À plus !", ipa: "/a plys/", audioText: "À plus !",
+        translation: "До скорого! / Увидимся!",
+        colloquial: "Главный неформальный способ попрощаться со знакомыми и друзьями.",
+        rule: "Читается открыто и чётко как «а», даже в безударном слоге (не превращается в «о», как в русском)."
+      },
+      {
+        id: "l1_02", sprint: 1, category: "alphabet", categoryLabel: "Спринт 1 · Алфавит",
+        frontSub: "Буква и главный звук", frontMain: "B b — [b] («б»)",
+        example: "Bonjour", ipa: "/bɔ̃.ʒuʁ/", audioText: "Bonjour",
+        translation: "Здравствуйте / Добрый день",
+        colloquial: "Универсальное приветствие в любое светлое время суток — в магазине, офисе и на улице.",
+        rule: "Читается как твёрдое [б] и не оглушается на конце слов."
+      },
+      {
+        id: "l1_03", sprint: 1, category: "alphabet", categoryLabel: "Спринт 1 · Алфавит",
+        frontSub: "Буква и два её звука", frontMain: "C c — [s] / [k]",
+        example: "Merci / Café", ipa: "/mɛʁ.si/ · /ka.fe/", audioText: "Merci. Café.",
+        translation: "Спасибо / Кофе",
+        colloquial: "Два самых частых слова в любом французском бистро с первой минуты.",
+        rule: "Двуликая буква: перед e, i, y даёт [с] (Merci), перед a, o, u и согласными — [к] (Café)."
+      },
+      {
+        id: "l1_04", sprint: 1, category: "alphabet", categoryLabel: "Спринт 1 · Алфавит",
+        frontSub: "Буква и главный звук", frontMain: "D d — [d] («д»)",
+        example: "De rien / Pardon", ipa: "/də ʁjɛ̃/ · /paʁ.dɔ̃/", audioText: "De rien. Pardon.",
+        translation: "Не за что / Извините",
+        colloquial: "«De rien» — живой ответ на благодарность; «Pardon» — чтобы вежливо пройти в толпе.",
+        rule: "Читается как [д], но на самом конце слова почти всегда молчит (chaud, grand)."
+      },
+      {
+        id: "l1_05", sprint: 1, category: "alphabet", categoryLabel: "Спринт 1 · Алфавит",
+        frontSub: "Буква и её позиции", frontMain: "E e — [ə] / [ɛ]",
+        example: "Le / Crème", ipa: "/lə/ · /kʁɛm/", audioText: "Le café crème",
+        translation: "Артикль / Сливки (кофе со сливками)",
+        colloquial: "«Un café crème» — классический утренний кофе с молоком или сливками.",
+        rule: "В открытом слоге даёт беглое округлённое «э», в закрытом — открытое [э], а на конце слова молчит."
+      },
+      {
+        id: "l1_06", sprint: 1, category: "alphabet", categoryLabel: "Спринт 1 · Алфавит",
+        frontSub: "Буква и главный звук", frontMain: "F f — [f] («ф»)",
+        example: "Café / Neuf", ipa: "/ka.fe/ · /nœf/", audioText: "Café. Neuf.",
+        translation: "Кофе / Девять",
+        colloquial: "Цифра «neuf» (девять) пригодится при оплате счёта и в номерах телефонов.",
+        rule: "Читается как [ф], причём на конце слов обычно произносится (в отличие от d, s, t)."
+      },
+      {
+        id: "l1_07", sprint: 1, category: "alphabet", categoryLabel: "Спринт 1 · Алфавит",
+        frontSub: "Буква и два её звука", frontMain: "G g — [ʒ] / [ɡ]",
+        example: "La plage / La gare", ipa: "/la plaʒ/ · /la ɡaʁ/", audioText: "La plage. La gare.",
+        translation: "Пляж / Вокзал",
+        colloquial: "Опорные точки для навигации в городе и поездок.",
+        rule: "Работает как C: перед e, i, y читается как [ж] (la plage), перед остальными — как [г] (la gare)."
+      },
+      {
+        id: "l1_08", sprint: 1, category: "alphabet", categoryLabel: "Спринт 1 · Алфавит",
+        frontSub: "Буква-призрак", frontMain: "H h — (немая)",
+        example: "Homme / Thé", ipa: "/ɔm/ · /te/", audioText: "Un homme. Un thé.",
+        translation: "Мужчина, человек / Чай",
+        colloquial: "Никогда не пытайтесь выдохнуть звук «х» в начале французских слов.",
+        rule: "Буква H никогда не читается. Она существует только на письме по исторической традиции."
+      },
+      {
+        id: "l1_09", sprint: 1, category: "alphabet", categoryLabel: "Спринт 1 · Алфавит",
+        frontSub: "Буква и главный звук", frontMain: "I i — [i] («и»)",
+        example: "Merci / Paris", ipa: "/mɛʁ.si/ · /pa.ʁi/", audioText: "Merci. Paris.",
+        translation: "Спасибо / Париж",
+        colloquial: "Обратите внимание: в слове «Paris» буква «s» на конце немая — звучит «Пари».",
+        rule: "Читается как чистое [и], не смягчая согласную перед собой так сильно, как в русском."
+      },
+      {
+        id: "l1_10", sprint: 1, category: "alphabet", categoryLabel: "Спринт 1 · Алфавит",
+        frontSub: "Буква и главный звук", frontMain: "J j — [ʒ] («ж»)",
+        example: "Bonjour / Je", ipa: "/bɔ̃.ʒuʁ/ · /ʒə/", audioText: "Bonjour. Je.",
+        translation: "Добрый день / Я",
+        colloquial: "Местоимение «Je» (я) — основа большинства фраз о себе.",
+        rule: "Всегда и везде даёт мягкое [ж], без единого исключения."
+      },
+
+      // --- СПРИНТ 1 · ШАГ 02: ПРАВИЛА ЧТЕНИЯ И ФОНЕТИКА (10 КАРТОЧЕК) ---
+      {
+        id: "l1_11", sprint: 1, category: "phonetics", categoryLabel: "Спринт 1 · Фонетика",
+        frontSub: "Правило конца слова", frontMain: "Немые -e, -t, -s",
+        example: "Salut / Madame", ipa: "/sa.ly/ · /ma.dam/", audioText: "Salut ! Bonjour Madame.",
+        translation: "Привет! / Мадам",
+        colloquial: "«Salut» — для друзей и ровесников; «Madame» — вежливое обращение к любой женщине.",
+        rule: "Ударение всегда падает на последний слог, а конечные -e, -t, -s, -d почти никогда не читаются."
+      },
+      {
+        id: "l1_12", sprint: 1, category: "phonetics", categoryLabel: "Спринт 1 · Фонетика",
+        frontSub: "Буквосочетание", frontMain: "ch → [ʃ] («ш»)",
+        example: "Enchanté / Elle marche", ipa: "/ɑ̃.ʃɑ̃.te/ · /ɛl maʁʃ/", audioText: "Enchanté ! Elle marche.",
+        translation: "Приятно познакомиться! / Она идёт",
+        colloquial: "«Enchanté !» — естественная реакция при знакомстве и рукопожатии.",
+        rule: "Сочетание ch во французском всегда даёт мягкий звук [ш], а не «ч» или «х»."
+      },
+      {
+        id: "l1_13", sprint: 1, category: "phonetics", categoryLabel: "Спринт 1 · Фонетика",
+        frontSub: "Позиция гласной", frontMain: "c перед e, i → [s]",
+        example: "Merci / La place", ipa: "/mɛʁ.si/ · /la plas/", audioText: "Merci. La place.",
+        translation: "Спасибо / Площадь, место",
+        colloquial: "Вместо длинного «Je vous remercie» в жизни говорят короткое «Merci» или «Merci bien».",
+        rule: "Перед буквами e, i, y буква c смягчается и читается как [с]."
+      },
+      {
+        id: "l1_14", sprint: 1, category: "phonetics", categoryLabel: "Спринт 1 · Фонетика",
+        frontSub: "Позиция гласной", frontMain: "c перед a, o, u → [k]",
+        example: "Café / La carte", ipa: "/ka.fe/ · /la kaʁt/", audioText: "Un café. La carte.",
+        translation: "Кофе / Меню, банковская карта",
+        colloquial: "«La carte» выручит и в ресторане (попросить меню), и на кассе (оплата картой).",
+        rule: "Перед a, o, u и любыми согласными буква c читается как твёрдое [к]."
+      },
+      {
+        id: "l1_15", sprint: 1, category: "phonetics", categoryLabel: "Спринт 1 · Фонетика",
+        frontSub: "Позиция гласной", frontMain: "g перед e, i → [ʒ]",
+        example: "La plage / La girafe", ipa: "/la plaʒ/ · /la ʒi.ʁaf/", audioText: "La plage. La girafe.",
+        translation: "Пляж / Жираф",
+        colloquial: "Звук [ж] точно такой же, как у буквы J в слове «Bonjour».",
+        rule: "Перед e, i, y буква g читается как [ж], а перед остальными — как [г] (la gare)."
+      },
+      {
+        id: "l1_16", sprint: 1, category: "phonetics", categoryLabel: "Спринт 1 · Фонетика",
+        frontSub: "Между гласными", frontMain: "s между гласными → [z]",
+        example: "La chaise / Valise", ipa: "/la ʃɛz/ · /va.liz/", audioText: "La chaise. La valise.",
+        translation: "Стул / Чемодан",
+        colloquial: "Чтобы сохранить глухой звук [с] между гласными, пишут две ss (la presse).",
+        rule: "Одиночная s, зажатая между двумя гласными буквами, озвончается и звучит как [з]."
+      },
+      {
+        id: "l1_17", sprint: 1, category: "phonetics", categoryLabel: "Спринт 1 · Фонетика",
+        frontSub: "Сочетания согласных", frontMain: "th → [t] и двойные",
+        example: "Un thé / Belle / Adresse", ipa: "/œ̃ te/ · /bɛl/ · /a.dʁɛs/", audioText: "Un thé. Belle adresse.",
+        translation: "Чай / Красивая / Адрес",
+        colloquial: "«Un thé» — чай. Французы никогда не произносят английское межзубное «th».",
+        rule: "Сочетание th читается как чистое [т], а двойные согласные (ll, ss, tt) читаются как одна буква."
+      },
+      {
+        id: "l1_18", sprint: 1, category: "phonetics", categoryLabel: "Спринт 1 · Фонетика",
+        frontSub: "Открытый гласный", frontMain: "è, ê, ai, ei, est → [ɛ]",
+        example: "Crème / C'est / Paire", ipa: "/kʁɛm/ · /sɛ/ · /pɛʁ/", audioText: "C'est une crème.",
+        translation: "Сливки / Это есть / Пара",
+        colloquial: "«C'est» («это есть») — главный строительный блок всей разговорной речи.",
+        rule: "Буквы è, ê, сочетания ai, ei и короткое слово est читаются как открытое [э]."
+      },
+      {
+        id: "l1_19", sprint: 1, category: "phonetics", categoryLabel: "Спринт 1 · Фонетика",
+        frontSub: "Дифтонг", frontMain: "oi → [wa] («уа»)",
+        example: "Moi / Toi", ipa: "/mwa/ · /twa/", audioText: "Moi. Et toi ?",
+        translation: "Я (мне) / Ты (тебе)",
+        colloquial: "«Moi» и «Toi» — ударные местоимения для живого диалога («Et toi ?» — «А ты?»).",
+        rule: "Сочетание букв oi во французском всегда читается как сочное [уа], а не «ои»."
+      },
+      {
+        id: "l1_20", sprint: 1, category: "phonetics", categoryLabel: "Спринт 1 · Фонетика",
+        frontSub: "Носовые гласные", frontMain: "on / an / en",
+        example: "Bonjour / Comment", ipa: "/bɔ̃.ʒuʁ/ · /kɔ.mɑ̃/", audioText: "Bonjour, comment ça va ?",
+        translation: "Добрый день / Как",
+        colloquial: "Воздух идёт в нос, а сама буква n в конце не проговаривается кончиком языка.",
+        rule: "Сочетания on и an/en перед согласной или на конце слова сливаются в единый носовой гласный."
+      },
+
+      // --- СПРИНТ 2 · ШАГ 03: СЧЁТ ОТ 1 ДО 10 (10 КАРТОЧЕК) ---
+      {
+        id: "l1_21", sprint: 2, category: "numbers", categoryLabel: "Спринт 2 · Цифры 1–10",
+        frontSub: "Цифра 1", frontMain: "1 — Un / Une",
+        example: "Un café / Une table", ipa: "/œ̃ ka.fe/ · /yn tabl/", audioText: "Un café, une table.",
+        translation: "Один / Одна (один кофе / один столик)",
+        colloquial: "Заказ у барной стойки или просьба о столике в кафе.",
+        rule: "Единственная цифра, меняющаяся по родам: в мужском роде уходит в нос (un), в женском звучит [н] (une)."
+      },
+      {
+        id: "l1_22", sprint: 2, category: "numbers", categoryLabel: "Спринт 2 · Цифры 1–10",
+        frontSub: "Цифра 2", frontMain: "2 — Deux",
+        example: "Deux cafés, s'il vous plaît", ipa: "/dø ka.fe sil vu plɛ/", audioText: "Deux cafés, s'il vous plaît.",
+        translation: "Два (Два кофе, пожалуйста)",
+        colloquial: "Базовая фраза заказа на двоих.",
+        rule: "Сочетание eu даёт округлый звук (губы как на «о», язык как на «э»), а конечная -x не читается."
+      },
+      {
+        id: "l1_23", sprint: 2, category: "numbers", categoryLabel: "Спринт 2 · Цифры 1–10",
+        frontSub: "Цифра 3", frontMain: "3 — Trois",
+        example: "Trois nuits", ipa: "/tʁwa nɥi/", audioText: "Trois nuits.",
+        translation: "Три (Три ночи)",
+        colloquial: "Пригодится при бронировании отеля или обсуждении сроков.",
+        rule: "Сочетание oi читается как сочное [уа], а конечная -s на конце молчит."
+      },
+      {
+        id: "l1_24", sprint: 2, category: "numbers", categoryLabel: "Спринт 2 · Цифры 1–10",
+        frontSub: "Цифра 4", frontMain: "4 — Quatre",
+        example: "Quatre personnes", ipa: "/katʁ pɛʁ.sɔn/", audioText: "Quatre personnes.",
+        translation: "Четыре (Четыре человека)",
+        colloquial: "Когда бронируете столик или заказываете трансфер на компанию.",
+        rule: "Сочетание qu во французском всегда читается как простое [к] — буква u после q немая."
+      },
+      {
+        id: "l1_25", sprint: 2, category: "numbers", categoryLabel: "Спринт 2 · Цифры 1–10",
+        frontSub: "Цифра 5", frontMain: "5 — Cinq",
+        example: "Cinq minutes", ipa: "/sɛ̃k mi.nyt/", audioText: "Cinq minutes.",
+        translation: "Пять (Пять минут)",
+        colloquial: "«Dans cinq minutes» — «Через пять минут».",
+        rule: "Сочетание in даёт носовой звук, а конечная -q здесь произносится как чёткое [к]."
+      },
+      {
+        id: "l1_26", sprint: 2, category: "numbers", categoryLabel: "Спринт 2 · Цифры 1–10",
+        frontSub: "Цифра 6", frontMain: "6 — Six",
+        example: "Numéro six", ipa: "/ny.me.ʁo sis/", audioText: "Numéro six.",
+        translation: "Шесть (Номер шесть)",
+        colloquial: "Выход, платформа, этаж или номер комнаты.",
+        rule: "Исключение: стоящая отдельно или в конце фразы буква -x читается как [с]."
+      },
+      {
+        id: "l1_27", sprint: 2, category: "numbers", categoryLabel: "Спринт 2 · Цифры 1–10",
+        frontSub: "Цифра 7", frontMain: "7 — Sept",
+        example: "Sept jours", ipa: "/sɛt ʒuʁ/", audioText: "Sept jours.",
+        translation: "Семь (Семь дней)",
+        colloquial: "Неделя или срок поездки.",
+        rule: "Буква p внутри слова немая, а вот конечная -t чётко произносится."
+      },
+      {
+        id: "l1_28", sprint: 2, category: "numbers", categoryLabel: "Спринт 2 · Цифры 1–10",
+        frontSub: "Цифра 8", frontMain: "8 — Huit",
+        example: "Huit heures", ipa: "/ɥi.t‿œʁ/", audioText: "Huit heures.",
+        translation: "Восемь (Восемь часов)",
+        colloquial: "Время утренней встречи или выезда.",
+        rule: "Начальная h немая, ui сливается в быстрое [уи], а конечная -t читается."
+      },
+      {
+        id: "l1_29", sprint: 2, category: "numbers", categoryLabel: "Спринт 2 · Цифры 1–10",
+        frontSub: "Цифра 9", frontMain: "9 — Neuf",
+        example: "Neuf euros", ipa: "/nœ.f‿ø.ʁo/", audioText: "Neuf euros.",
+        translation: "Девять (Девять евро)",
+        colloquial: "Озвучивание суммы на кассе.",
+        rule: "Конечная -f читается как [ф] (перед словами ans и heures озвончается в [в]: neuf ans)."
+      },
+      {
+        id: "l1_30", sprint: 2, category: "numbers", categoryLabel: "Спринт 2 · Цифры 1–10",
+        frontSub: "Цифра 10", frontMain: "10 — Dix",
+        example: "Dix minutes", ipa: "/di mi.nyt/", audioText: "Dix. Dix minutes.",
+        translation: "Десять (Десять минут)",
+        colloquial: "Базовый ориентир времени и счёта.",
+        rule: "Отдельно читается с [с] на конце (/dis/), а перед гласной озвончается в [з] (dix heures)."
+      },
+
+      // --- СПРИНТ 2 · ШАГ 04: ЖИВЫЕ ЧАНКИ И РАЗГОВОРНЫЕ ФРАЗЫ (8 КАРТОЧЕК) ---
+      {
+        id: "l1_31", sprint: 2, category: "chunks", categoryLabel: "Спринт 2 · Живые чанки",
+        frontSub: "Разговорный чанк", frontMain: "Salut ! Ça va ?",
+        example: "Неформальное приветствие", ipa: "/sa.ly sa va/", audioText: "Salut ! Ça va ?",
+        translation: "Привет! Как дела?",
+        colloquial: "Вместо школьного «Comment allez-vous ?» со знакомыми говорят только «Ça va ?».",
+        rule: "Вопрос задаётся просто подъёмом голоса в конце фразы без перестановки слов."
+      },
+      {
+        id: "l1_32", sprint: 2, category: "chunks", categoryLabel: "Спринт 2 · Живые чанки",
+        frontSub: "Разговорный чанк", frontMain: "Ça va bien, et toi ?",
+        example: "Естественный ответ", ipa: "/sa va bjɛ̃ e twa/", audioText: "Ça va bien, et toi ?",
+        translation: "Всё хорошо, а у тебя?",
+        colloquial: "В быстрой речи сокращают до «Ça va, et toi ?» или отвечают «Tranquille» («ровно / спокойно»).",
+        rule: "В слове et («и») конечная -t не читается, звук закрытый — [э]."
+      },
+      {
+        id: "l1_33", sprint: 2, category: "chunks", categoryLabel: "Спринт 2 · Живые чанки",
+        frontSub: "Разговорный чанк", frontMain: "Moi, c'est Alex.",
+        example: "Знакомство в компании", ipa: "/mwa sɛ a.lɛks/", audioText: "Moi, c'est Alex.",
+        translation: "Я Алекс (Меня зовут Алекс).",
+        colloquial: "В компании или баре 9 из 10 французов скажут «Moi, c'est...» вместо книжного «Je m'appelle...».",
+        rule: "Связка c'est образовалась из ce + est: гласная выпадает и ставится апостроф."
+      },
+      {
+        id: "l1_34", sprint: 2, category: "chunks", categoryLabel: "Спринт 2 · Живые чанки",
+        frontSub: "Разговорный чанк", frontMain: "Enchanté ! / Enchantée !",
+        example: "Реакция на имя", ipa: "/ɑ̃.ʃɑ̃.te/", audioText: "Enchanté !",
+        translation: "Очень приятно!",
+        colloquial: "Говорят при первом знакомстве сразу после того, как услышали имя собеседника.",
+        rule: "В женском роде добавляется немая -e (Enchantée), но произносятся оба варианта одинаково."
+      },
+      {
+        id: "l1_35", sprint: 2, category: "chunks", categoryLabel: "Спринт 2 · Живые чанки",
+        frontSub: "Разговорный чанк", frontMain: "Excuse-moi / Pardon.",
+        example: "Вежливое внимание", ipa: "/ɛk.skyz mwa/ · /paʁ.dɔ̃/", audioText: "Excuse-moi. Pardon.",
+        translation: "Извини / Простите.",
+        colloquial: "«Pardon» — если задел кого-то на улице или хочешь пройти; «Excuse-moi» — привлечь внимание на «ты».",
+        rule: "В просьбе на «ты» глагол теряет конечную -s (excuse), а moi крепится через дефис."
+      },
+      {
+        id: "l1_36", sprint: 2, category: "chunks", categoryLabel: "Спринт 2 · Живые чанки",
+        frontSub: "Разговорный чанк", frontMain: "Merci bien ! — De rien.",
+        example: "Благодарность и ответ", ipa: "/mɛʁ.si bjɛ̃/ · /də ʁjɛ̃/", audioText: "Merci bien ! De rien.",
+        translation: "Большое спасибо! — Не за что.",
+        colloquial: "Вместо длинного «Je vous en prie» в быту отвечают «De rien» или «Pas de souci» («без проблем»).",
+        rule: "Сочетание ien в словах bien и rien читается как носовой звук [йэн] без твёрдого «н» на конце."
+      },
+      {
+        id: "l1_37", sprint: 2, category: "chunks", categoryLabel: "Спринт 2 · Живые чанки",
+        frontSub: "Разговорный чанк", frontMain: "Bonne journée !",
+        example: "Прощание днём", ipa: "/bɔn ʒuʁ.ne/", audioText: "Bonne journée !",
+        translation: "Хорошего дня!",
+        colloquial: "Обязательный ритуал на выходе из любой булочной, кофейни или магазина во Франции.",
+        rule: "В мужском роде bon читается в нос, а в женском (bonne) добавляется -ne, и [н] начинает звучать."
+      },
+      {
+        id: "l1_38", sprint: 2, category: "chunks", categoryLabel: "Спринт 2 · Живые чанки",
+        frontSub: "Разговорный чанк", frontMain: "À plus !",
+        example: "Быстрое прощание", ipa: "/a plys/", audioText: "À plus !",
+        translation: "До скорого! / Увидимся!",
+        colloquial: "Разговорное сокращение от «À plus tard». Идеально для прощания со знакомыми.",
+        rule: "Исключение из правил: в живом прощании «À plus» конечная буква -s всегда произносится как [с]."
+      }
+    ];
+
+    const DIALOGUE_LINES = [
+      {
+        speaker: "Camille",
+        fr: "Salut ! Moi, c'est Camille. Et toi ?",
+        ipa: "/sa.ly mwa sɛ ka.mij e twa/",
+        ru: "Привет! Я Камиль. А ты?"
+      },
+      {
+        speaker: "Max",
+        fr: "Salut Camille ! Moi, c'est Max. Enchanté !",
+        ipa: "/sa.ly ka.mij mwa sɛ maks ɑ̃.ʃɑ̃.te/",
+        ru: "Привет, Камиль! Я Макс. Приятно познакомиться!"
+      },
+      {
+        speaker: "Camille",
+        fr: "Enchantée ! Ça va ?",
+        ipa: "/ɑ̃.ʃɑ̃.te sa va/",
+        ru: "Взаимно! Как дела?"
+      },
+      {
+        speaker: "Max",
+        fr: "Ça va bien, merci ! Deux cafés, s'il vous plaît... Bon, à plus !",
+        ipa: "/sa va bjɛ̃ mɛʁ.si dø ka.fe sil vu plɛ bɔ̃ a plys/",
+        ru: "Всё отлично, спасибо! Два кофе, пожалуйста... Ладно, до скорого!"
+      }
+    ];
+
+    const ROUTE_STEPS = [
+      { id: "step_01", num: "01", title: "Алфавит: A–J", sub: "Спринт 1 · 10 букв", category: "alphabet", mode: "study" },
+      { id: "step_02", num: "02", title: "Правила чтения", sub: "Спринт 1 · 10 правил", category: "phonetics", mode: "study" },
+      { id: "step_03", num: "03", title: "Счёт от 1 до 10", sub: "Спринт 2 · 10 цифр", category: "numbers", mode: "study" },
+      { id: "step_04", num: "04", title: "Живые чанки", sub: "Спринт 2 · 8 фраз", category: "chunks", mode: "study" },
+      { id: "step_05", num: "05", title: "Диалог сборки", sub: "Спринт 2 · Сценка", category: "dialogue", mode: "dialogue" },
+      { id: "step_06", num: "06", title: "Финальный тест", sub: "Зачёт 38/38 в архив", category: "all", mode: "test" },
+      { id: "lesson_02", num: "🔒", title: "Урок 2 · Алфавит K–T", sub: "Откроется после 38/38", category: "locked", mode: "locked" }
+    ];
+
+    // =========================================================================
+    // 4. СОСТОЯНИЕ И СОХРАНЕНИЕ ПРОГРЕССА (АРХИВ И ПОВТОРЫ НА 30 ДНЕЙ)
+    // =========================================================================
+    const STORAGE_KEY = "french_course_m1_l1_v1";
+    let state = {
+      studiedIds: [],      // Выучено в режиме обучения
+      archivedCards: {},   // { id: { archivedAt, nextReviewDays: 1 } } — Финальный тест
+      dialogueDone: false,
+      direction: "FR_RU",  // "FR_RU" или "RU_FR"
+      speechRate: 0.85
+    };
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved && typeof saved === "object") {
+        state = { ...state, ...saved };
+      }
+    } catch (e) {}
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+      updateGlobalCounters();
+    }
+
+    // Активная сессия
+    let currentStepIndex = 0;
+    let activeQueue = [];
+    let currentCard = null;
+    let isFlipped = false;
+
+    // =========================================================================
+    // 5. АУДИО-ДВИЖОК (WEB SPEECH API + ГОТОВЫЙ ХУК ELEVENLABS)
+    // =========================================================================
+    let unlockedAudioCtx = false;
+    function unlockAudio() {
+      if (unlockedAudioCtx) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          if (ctx.state === "suspended") ctx.resume();
+        }
+        unlockedAudioCtx = true;
+      } catch (e) {}
+    }
+
+    async function speakFrench(text) {
+      if (!text) return;
+      unlockAudio();
+      triggerHaptic("light");
+
+      // Ветка 1: ElevenLabs (активируется при ELEVENLABS_CONFIG.enabled = true)
+      if (ELEVENLABS_CONFIG.enabled && ELEVENLABS_CONFIG.apiKey) {
+        try {
+          const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_CONFIG.voiceId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "xi-api-key": ELEVENLABS_CONFIG.apiKey
+            },
+            body: JSON.stringify({
+              text,
+              model_id: ELEVENLABS_CONFIG.modelId,
+              voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+            })
+          });
+          if (resp.ok) {
+            const blob = await resp.blob();
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            audio.playbackRate = state.speechRate;
+            await audio.play();
+            return;
+          }
+        } catch (err) {
+          console.warn("ElevenLabs fallback to browser TTS:", err);
+        }
+      }
+
+      // Ветка 2: Нативный французский синтезатор устройства
+      try {
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.lang = "fr-FR";
+          utter.rate = state.speechRate;
+
+          const voices = window.speechSynthesis.getVoices();
+          const frVoice = voices.find(v => v.lang.toLowerCase().startsWith("fr"));
+          if (frVoice) utter.voice = frVoice;
+
+          window.speechSynthesis.speak(utter);
+        }
+      } catch (e) {}
+    }
+
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+
+    // =========================================================================
+    // 6. ОТРИСОВКА ОБЗОРА И МАРШРУТА
+    // =========================================================================
+    function updateGlobalCounters() {
+      const archivedCount = Object.keys(state.archivedCards).length;
+      const isLesson2Unlocked = archivedCount >= LESSON_1_CARDS.length;
+
+      document.getElementById("overviewArchiveCount").textContent = archivedCount;
+      document.getElementById("routeArchiveSummary").textContent = `${archivedCount} / ${LESSON_1_CARDS.length}`;
+
+      const container = document.getElementById("routeGridContainer");
+      container.innerHTML = "";
+
+      ROUTE_STEPS.forEach((step, idx) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        const isLocked = step.mode === "locked" && !isLesson2Unlocked;
+        const isCompleted = checkStepCompleted(step);
+        const isActive = idx === currentStepIndex && document.getElementById("viewTrainer").style.display !== "none";
+
+        btn.className = `route-card ${isLocked ? "locked" : ""} ${isCompleted ? "completed" : ""} ${isActive ? "active" : ""}`;
+
+        let displayNum = step.num;
+        let displayTitle = step.title;
+        let displaySub = step.sub;
+
+        if (step.mode === "locked" && isLesson2Unlocked) {
+          displayNum = "07";
+          displayTitle = "Урок 2 · Открыт!";
+          displaySub = "Доступ разблокирован (38/38)";
+        }
+
+        btn.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:6px;">
+            <span style="font-size:13px; font-weight:800; color:${isCompleted ? "var(--success-green)" : "var(--brand-terracotta)"};">
+              ${isCompleted ? "✓ " + displayNum : displayNum}
+            </span>
+            ${step.mode === "test" ? `<span style="font-size:11px; font-weight:700; color:var(--brand-blue);">${archivedCount}/38</span>` : ""}
+          </div>
+          <div>
+            <div style="font-size:15px; font-weight:700; color:var(--ink-primary); margin-bottom:2px;">${displayTitle}</div>
+            <div style="font-size:12px; color:var(--ink-secondary); font-style:italic;">${displaySub}</div>
+          </div>
+        `;
+
+        btn.addEventListener("click", () => {
+          if (isLocked) {
+            triggerHaptic("error");
+            alert("Урок 2 заблокирован. Пройдите Финальный тест Урока 1 и отправьте все 38 карточек в архив (сейчас в архиве: " + archivedCount + " из 38).");
+            return;
+          }
+          if (step.mode === "locked" && isLesson2Unlocked) {
+            triggerHaptic("success");
+            alert("Поздравляем! Все 38 карточек Урока 1 в архиве. Урок 2 готов к запуску!");
+            return;
+          }
+          openStep(idx);
+        });
+
+        container.appendChild(btn);
+      });
+    }
+
+    function checkStepCompleted(step) {
+      if (step.mode === "study") {
+        const stepCards = LESSON_1_CARDS.filter(c => c.category === step.category);
+        return stepCards.every(c => state.studiedIds.includes(c.id));
+      }
+      if (step.mode === "dialogue") {
+        return state.dialogueDone;
+      }
+      if (step.mode === "test") {
+        return Object.keys(state.archivedCards).length >= LESSON_1_CARDS.length;
+      }
+      return false;
+    }
+
+    // =========================================================================
+    // 7. ЗАПУСК ШАГА (ОБУЧЕНИЕ, ДИАЛОГ ИЛИ ФИНАЛЬНЫЙ ТЕСТ)
+    // =========================================================================
+    function showOverview() {
+      document.getElementById("viewOverview").style.display = "block";
+      document.getElementById("viewTrainer").style.display = "none";
+      document.getElementById("btnBackToOverview").style.display = "none";
+      updateGlobalCounters();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function openStep(stepIdx) {
+      currentStepIndex = stepIdx;
+      const step = ROUTE_STEPS[stepIdx];
+      triggerHaptic("medium");
+
+      document.getElementById("viewOverview").style.display = "none";
+      document.getElementById("viewTrainer").style.display = "block";
+      document.getElementById("btnBackToOverview").style.display = "inline-flex";
+
+      // Обновляем подвал навигации
+      document.getElementById("btnPrevStepFooter").style.visibility = stepIdx === 0 ? "hidden" : "visible";
+      const nextStep = ROUTE_STEPS[stepIdx + 1];
+      if (nextStep) {
+        document.getElementById("btnNextStepFooter").textContent = `${nextStep.title} →`;
+      }
+
+      if (step.mode === "dialogue") {
+        setupDialogueView(step);
+        return;
+      }
+
+      if (step.mode === "test") {
+        setupFinalTestView(step);
+        return;
+      }
+
+      setupStudyView(step);
+    }
+
+    function setupStudyView(step) {
+      document.getElementById("flashcardWorkspace").style.display = "block";
+      document.getElementById("dialogueWorkspace").style.display = "none";
+      document.getElementById("deckCompleteBox").style.display = "none";
+      document.getElementById("studyControlsBar").style.display = "flex";
+      document.getElementById("testModeBanner").style.display = "none";
+
+      document.getElementById("stepBadge").textContent = `Шаг ${step.num} · ${step.category === "alphabet" || step.category === "phonetics" ? "Спринт 1 (Утро)" : "Спринт 2 (Вечер)"}`;
+      document.getElementById("stepTitle").textContent = step.title;
+      document.getElementById("stepSubtitle").textContent = "Нажмите на карточку, чтобы перевернуть. «Ещё повторить» возвращает карточку через 3 шага.";
+      document.getElementById("repeatBtnLabel").textContent = "Ещё повторить";
+
+      // Активируем нужную пилюлю фильтра
+      document.querySelectorAll("#categoryPills .pill-btn").forEach(p => {
+        p.classList.toggle("active", p.dataset.filter === step.category);
+      });
+
+      const cards = LESSON_1_CARDS.filter(c => c.category === step.category);
+      activeQueue = [...cards];
+      renderCurrentCard();
+    }
+
+    function setupFinalTestView(step) {
+      document.getElementById("flashcardWorkspace").style.display = "block";
+      document.getElementById("dialogueWorkspace").style.display = "none";
+      document.getElementById("deckCompleteBox").style.display = "none";
+      document.getElementById("studyControlsBar").style.display = "none";
+      document.getElementById("testModeBanner").style.display = "block";
+
+      document.getElementById("stepBadge").textContent = "Шаг 06 · Итоговый зачёт Урока 1";
+      document.getElementById("stepTitle").textContent = "Финальный тест (38 карточек)";
+      document.getElementById("stepSubtitle").textContent = "Карточки без перевода. Нажмите «Учить», чтобы прогнать повторно, или «Выучил», чтобы отправить в архив на месяц.";
+      document.getElementById("repeatBtnLabel").textContent = "Учить";
+
+      // Собираем только те карточки, которые ещё НЕ в архиве
+      const remaining = LESSON_1_CARDS.filter(c => !state.archivedCards[c.id]);
+      activeQueue = [...remaining];
+      renderCurrentCard();
+    }
+
+    function setupDialogueView(step) {
+      document.getElementById("flashcardWorkspace").style.display = "none";
+      document.getElementById("deckCompleteBox").style.display = "none";
+      document.getElementById("studyControlsBar").style.display = "none";
+      document.getElementById("testModeBanner").style.display = "none";
+      document.getElementById("dialogueWorkspace").style.display = "block";
+
+      document.getElementById("stepBadge").textContent = "Шаг 05 · Спринт 2 (Вечер)";
+      document.getElementById("stepTitle").textContent = "Диалог сборки";
+      document.getElementById("stepSubtitle").textContent = "Соединяем пройденные правила чтения, цифры и живые чанки в реальный разговор.";
+
+      document.getElementById("progressBarFill").style.width = "100%";
+      document.getElementById("progressCounterText").textContent = "4 реплики";
+
+      const list = document.getElementById("dialogueLinesContainer");
+      list.innerHTML = "";
+      DIALOGUE_LINES.forEach(line => {
+        const row = document.createElement("div");
+        row.style.cssText = "padding:14px 16px; border-radius:16px; background:#FAF6EE; border:1.5px solid var(--border-soft); cursor:pointer; transition:border-color 0.15s ease;";
+        row.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-size:12px; font-weight:700; color:var(--brand-terracotta);">${line.speaker}</span>
+            <span style="font-size:14px;">🔊</span>
+          </div>
+          <div class="font-serif-editorial" style="font-size:18px; font-weight:700; color:var(--ink-primary); margin-bottom:2px;">${line.fr}</div>
+          <div class="font-mono-ipa" style="font-size:12px; color:var(--brand-blue); margin-bottom:4px;">${line.ipa}</div>
+          <div style="font-size:13px; color:var(--ink-secondary);">${line.ru}</div>
+        `;
+        row.addEventListener("click", () => speakFrench(line.fr));
+        list.appendChild(row);
+      });
+
+      state.dialogueDone = true;
+      saveState();
+    }
+
+    // =========================================================================
+    // 8. ОТРИСОВКА КАРТОЧКИ И МЕХАНИКА "УЧИТЬ / ВЫУЧИЛ"
+    // =========================================================================
+    function renderCurrentCard() {
+      const step = ROUTE_STEPS[currentStepIndex];
+      const isTest = step.mode === "test";
+
+      // Сброс переворота и слота PRO
+      isFlipped = false;
+      document.getElementById("cardFlipper").classList.remove("is-flipped");
+      const fbSlot = document.getElementById("voiceFeedbackSlot");
+      fbSlot.style.display = "none";
+      fbSlot.innerHTML = "";
+
+      // Обновляем шкалу прогресса
+      if (isTest) {
+        const archivedTotal = Object.keys(state.archivedCards).length;
+        const pct = Math.round((archivedTotal / LESSON_1_CARDS.length) * 100);
+        document.getElementById("progressBarFill").style.width = `${pct}%`;
+        document.getElementById("progressCounterText").textContent = `В архиве: ${archivedTotal} / ${LESSON_1_CARDS.length}`;
+      } else {
+        const activeFilter = document.querySelector("#categoryPills .pill-btn.active")?.dataset.filter || "all";
+        const pool = activeFilter === "all" ? LESSON_1_CARDS : LESSON_1_CARDS.filter(c => c.category === activeFilter);
+        const doneCount = pool.filter(c => state.studiedIds.includes(c.id)).length;
+        const pct = pool.length ? Math.round((doneCount / pool.length) * 100) : 0;
+        document.getElementById("progressBarFill").style.width = `${pct}%`;
+        document.getElementById("progressCounterText").textContent = `${doneCount} / ${pool.length} выучил`;
+      }
+
+      // Проверка завершения очереди
+      if (activeQueue.length === 0) {
+        document.getElementById("flashcardWorkspace").style.display = "none";
+        document.getElementById("deckCompleteBox").style.display = "block";
+
+        if (isTest) {
+          document.getElementById("completeTitle").textContent = "Урок 1 полностью сдан! (38 / 38)";
+          document.getElementById("completeDesc").textContent = "Все 38 карточек отправлены в Архив и поставлены в график повторения на 30 дней (1 → 3 → 7 → 14 → 30 дн.). Доступ к Уроку 2 разблокирован!";
+          document.getElementById("btnNextStepAction").textContent = "Вернуться в Маршрут (Урок 2 открыт)";
+        } else {
+          document.getElementById("completeTitle").textContent = `Блок «${step.title}» пройден!`;
+          document.getElementById("completeDesc").textContent = "Отличный темп! Переходите к следующему шагу маршрута.";
+          document.getElementById("btnNextStepAction").textContent = "Следующий шаг →";
+        }
+        saveState();
+        return;
+      }
+
+      currentCard = activeQueue[0];
+      document.getElementById("cardCategoryTag").textContent = currentCard.categoryLabel;
+      document.getElementById("cardIndexTag").textContent = `Осталось: ${activeQueue.length}`;
+
+      if (isTest) {
+        // ФИНАЛЬНЫЙ ТЕСТ: без перевода и подсказок на лицевой стороне
+        document.getElementById("cardFrontSub").textContent = "Проверка без подсказок";
+        document.getElementById("cardFrontMain").textContent = currentCard.frontMain;
+        document.getElementById("cardFrontExample").textContent = currentCard.example;
+        document.getElementById("cardFrontIpa").textContent = "";
+        document.getElementById("flipHintText").textContent = "Вспомните перевод и произнесите вслух";
+      } else if (state.direction === "RU_FR") {
+        // АКТИВНЫЙ ВЫЗОВ ПАМЯТИ (по системе Люка Маккарти: сначала видишь смысл на русском -> говоришь вслух)
+        document.getElementById("cardFrontSub").textContent = "Скажите по-французски вслух:";
+        document.getElementById("cardFrontMain").textContent = currentCard.translation;
+        document.getElementById("cardFrontExample").textContent = currentCard.frontSub;
+        document.getElementById("cardFrontIpa").textContent = "";
+        document.getElementById("flipHintText").textContent = "Нажмите, чтобы проверить себя";
+      } else {
+        // СТАНДАРТНЫЙ РЕЖИМ (FR -> RU)
+        document.getElementById("cardFrontSub").textContent = currentCard.frontSub;
+        document.getElementById("cardFrontMain").textContent = currentCard.frontMain;
+        document.getElementById("cardFrontExample").textContent = currentCard.example;
+        document.getElementById("cardFrontIpa").textContent = currentCard.ipa;
+        document.getElementById("flipHintText").textContent = "Нажмите, чтобы перевернуть";
+      }
+
+      // Оборот карточки
+      document.getElementById("cardBackTranslation").textContent = `${currentCard.frontMain} — ${currentCard.translation}`;
+      document.getElementById("cardBackColloquial").textContent = currentCard.colloquial;
+      document.getElementById("cardBackRule").textContent = currentCard.rule;
+    }
+
+    // Переворот карточки по клику
+    document.getElementById("cardFlipper").addEventListener("click", () => {
+      const step = ROUTE_STEPS[currentStepIndex];
+      if (step.mode === "test") {
+        triggerHaptic("warning");
+        const flipper = document.getElementById("cardFlipper");
+        flipper.classList.add("shake");
+        setTimeout(() => flipper.classList.remove("shake"), 350);
+        return; // В финальном тесте переворот с подсказками заблокирован
+      }
+      isFlipped = !isFlipped;
+      triggerHaptic("light");
+      document.getElementById("cardFlipper").classList.toggle("is-flipped", isFlipped);
+    });
+
+    // Кнопка "Ещё повторить" / "Учить" (возвращает через 3 карточки)
+    document.getElementById("btnRepeatAgain").addEventListener("click", () => {
+      if (!activeQueue.length) return;
+      triggerHaptic("medium");
+      const card = activeQueue.shift();
+      const insertPos = Math.min(3, activeQueue.length);
+      activeQueue.splice(insertPos, 0, card);
+      renderCurrentCard();
+    });
+
+    // Кнопка "Выучил"
+    document.getElementById("btnMarkLearned").addEventListener("click", () => {
+      if (!activeQueue.length) return;
+      triggerHaptic("success");
+      const card = activeQueue.shift();
+      const step = ROUTE_STEPS[currentStepIndex];
+
+      if (!state.studiedIds.includes(card.id)) {
+        state.studiedIds.push(card.id);
+      }
+
+      if (step.mode === "test") {
+        // Отправляем в Архив с графиком интервального повторения на 30 дней
+        state.archivedCards[card.id] = {
+          archivedAt: new Date().toISOString(),
+          scheduleDays: [1, 3, 7, 14, 30]
+        };
+      }
+
+      saveState();
+      renderCurrentCard();
+    });
+
+    // =========================================================================
+    // 9. СВАЙПЫ НА СМАРТФОНАХ (С ЗАЩИТОЙ ОТ ВЫЛЕТА TELEGRAM)
+    // =========================================================================
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const swipeZone = document.getElementById("swipeZone");
+
+    swipeZone.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].clientX;
+      touchStartY = e.changedTouches[0].clientY;
+    }, { passive: true });
+
+    swipeZone.addEventListener("touchend", (e) => {
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const diffX = endX - touchStartX;
+      const diffY = endY - touchStartY;
+
+      if (touchStartX < 32) return; // Защита системного свайпа Telegram
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 48) {
+        if (diffX < 0) {
+          document.getElementById("btnRepeatAgain").click();
+        } else {
+          document.getElementById("btnMarkLearned").click();
+        }
+      }
+    }, { passive: true });
+
+    // =========================================================================
+    // 10. ОБРАБОТЧИКИ КНОПОК И УПРАВЛЕНИЕ PRO 85%
+    // =========================================================================
+    document.getElementById("btnStartSprint1").addEventListener("click", () => openStep(0));
+    document.getElementById("btnStartFinalTest").addEventListener("click", () => openStep(5));
+    document.getElementById("btnBackToOverview").addEventListener("click", showOverview);
+
+    document.getElementById("btnAudioPlay").addEventListener("click", () => {
+      if (currentCard) speakFrench(currentCard.audioText);
+    });
+
+    document.getElementById("btnSpeechRate").addEventListener("click", (e) => {
+      const rates = [0.65, 0.85, 1.0];
+      const nextIdx = (rates.indexOf(state.speechRate) + 1) % rates.length;
+      state.speechRate = rates[nextIdx];
+      e.target.textContent = `${state.speechRate}x`;
+      saveState();
+      if (currentCard) speakFrench(currentCard.audioText);
+    });
+
+    document.getElementById("btnPlayFullDialogue").addEventListener("click", () => {
+      const fullText = DIALOGUE_LINES.map(l => l.fr).join(" ... ");
+      speakFrench(fullText);
+    });
+
+    document.getElementById("btnDialogueToTest").addEventListener("click", () => openStep(5));
+
+    // Фильтры в шапке
+    document.querySelectorAll("#categoryPills .pill-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#categoryPills .pill-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const filter = btn.dataset.filter;
+        activeQueue = filter === "all" ? [...LESSON_1_CARDS] : LESSON_1_CARDS.filter(c => c.category === filter);
+        renderCurrentCard();
+      });
+    });
+
+    // Переключатель FR -> RU / RU -> FR
+    document.getElementById("btnDirectionToggle").addEventListener("click", (e) => {
+      state.direction = state.direction === "FR_RU" ? "RU_FR" : "FR_RU";
+      e.target.textContent = state.direction === "FR_RU" ? "⇄ FR → RU" : "⇄ RU → FR";
+      saveState();
+      renderCurrentCard();
+    });
+
+    // Перемешать колоду
+    document.getElementById("btnShuffle").addEventListener("click", () => {
+      triggerHaptic("light");
+      for (let i = activeQueue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [activeQueue[i], activeQueue[j]] = [activeQueue[j], activeQueue[i]];
+      }
+      renderCurrentCard();
+    });
+
+    // Навигация между шагами
+    document.getElementById("btnPrevStepFooter").addEventListener("click", () => {
+      if (currentStepIndex > 0) openStep(currentStepIndex - 1);
+    });
+
+    document.getElementById("btnNextStepFooter").addEventListener("click", () => {
+      const nextIdx = currentStepIndex + 1;
+      if (nextIdx < ROUTE_STEPS.length) {
+        if (ROUTE_STEPS[nextIdx].mode === "locked" && Object.keys(state.archivedCards).length < LESSON_1_CARDS.length) {
+          openStep(5); // Отправляем на Финальный тест
+        } else {
+          openStep(nextIdx);
+        }
+      }
+    });
+
+    document.getElementById("btnNextStepAction").addEventListener("click", () => {
+      const step = ROUTE_STEPS[currentStepIndex];
+      if (step.mode === "test") {
+        showOverview();
+      } else if (currentStepIndex + 1 < ROUTE_STEPS.length) {
+        openStep(currentStepIndex + 1);
+      }
+    });
+
+    document.getElementById("btnRestartCurrentStep").addEventListener("click", () => {
+      const step = ROUTE_STEPS[currentStepIndex];
+      if (step.mode === "test") {
+        // Для повторного прогона теста сбрасываем архив урока только по подтверждению
+        if (confirm("Сбросить архив Финального теста и пройти все 38 карточек заново?")) {
+          state.archivedCards = {};
+          saveState();
+          openStep(5);
+        }
+      } else {
+        openStep(currentStepIndex);
+      }
+    });
+
+    // Слот платного AI-репетитора произношения (порог 85%)
+    function updateProUi() {
+      const dot = document.getElementById("proStatusDot");
+      const label = document.getElementById("proStatusLabel");
+      const btnLabel = document.getElementById("proBtnLabel");
+      if (userHasProVoice) {
+        dot.style.background = "#16A34A";
+        label.textContent = "Тариф: PRO 85% (Активен)";
+        btnLabel.textContent = "Записать голос (85%)";
+      } else {
+        dot.style.background = "#94A3B8";
+        label.textContent = "Тариф: Базовый";
+        btnLabel.textContent = "PRO · 85%";
+      }
+    }
+
+    document.getElementById("btnToggleProMode").addEventListener("click", () => {
+      if (!userHasProVoice) {
+        document.getElementById("proModal").classList.add("open");
+      } else {
+        userHasProVoice = false;
+        updateProUi();
+      }
+    });
+
+    document.getElementById("btnActivateProDemo").addEventListener("click", () => {
+      userHasProVoice = true;
+      updateProUi();
+      document.getElementById("proModal").classList.remove("open");
+      triggerHaptic("success");
+    });
+
+    document.getElementById("btnCloseProModal").addEventListener("click", () => {
+      document.getElementById("proModal").classList.remove("open");
+    });
+    document.getElementById("btnCancelProModal").addEventListener("click", () => {
+      document.getElementById("proModal").classList.remove("open");
+    });
+
+    document.getElementById("btnProVoiceCheck").addEventListener("click", async () => {
+      if (!userHasProVoice) {
+        document.getElementById("proModal").classList.add("open");
+        return;
+      }
+      if (!currentCard) return;
+
+      const fbSlot = document.getElementById("voiceFeedbackSlot");
+      fbSlot.style.display = "block";
+      fbSlot.style.background = "#F1F5F9";
+      fbSlot.style.border = "1px solid #CBD5E1";
+      fbSlot.style.color = "#334155";
+      fbSlot.innerHTML = "🎙️ Слушаю и анализирую фонемы...";
+
+      const res = await evaluatePronunciation(currentCard, true);
+      if (res.passed) {
+        triggerHaptic("success");
+        fbSlot.style.background = "#DCFCE7";
+        fbSlot.style.border = "1px solid #86EFAC";
+        fbSlot.style.color = "#14532D";
+        fbSlot.innerHTML = `<strong>✓ Зачёт · ${res.score}% (порог 85%)</strong><br>${res.feedback}`;
+      } else {
+        triggerHaptic("error");
+        fbSlot.style.background = "#FEE2E2";
+        fbSlot.style.border = "1px solid #FCA5A5";
+        fbSlot.style.color = "#7F1D1D";
+        fbSlot.innerHTML = `<strong>↻ Незачёт · ${res.score}% (нужно ≥ 85%)</strong><br>${res.feedback}`;
+      }
+    });
+
+    // Горячие клавиши для веб-версии (ПК и iPad с клавиатурой)
+    document.addEventListener("keydown", (e) => {
+      if (document.getElementById("viewTrainer").style.display === "none") return;
+      if (e.code === "Space") {
+        e.preventDefault();
+        document.getElementById("cardFlipper").click();
+      } else if (e.code === "ArrowRight") {
+        document.getElementById("btnMarkLearned").click();
+      } else if (e.code === "ArrowLeft") {
+        document.getElementById("btnRepeatAgain").click();
+      } else if (e.code === "KeyR") {
+        document.getElementById("btnAudioPlay").click();
+      }
+    });
+
+    // Старт приложения
+    document.getElementById("btnSpeechRate").textContent = `${state.speechRate}x`;
+    updateProUi();
+    updateGlobalCounters();
+  </script>
+</body>
+</html>
