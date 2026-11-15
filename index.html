@@ -815,7 +815,17 @@
         colloquial: "Местоимение «Je» (я) — основа большинства фраз о себе.",
         rule: "Всегда и везде даёт мягкое [ж], без единого исключения."
       },
-
+{
+        id: "l1_10_seq", sprint: 1, category: "alphabet", categoryLabel: "Спринт 1 · Алфавит (Сводка)",
+        frontSub: "Алфавит подряд: все 10 букв (A–J)",
+        frontMain: "A · B · C · D · E · F · G · H · I · J",
+        example: "а · бэ · сэ · дэ · э · эф · жэ · аш · и · жи",
+        ipa: "/a · be · se · de · ə · ɛf · ʒe · aʃ · i · ʒi/",
+        audioText: "A, B, C, D, E, F, G, H, I, J.",
+        translation: "Первые 10 букв французского алфавита подряд (A–J)",
+        colloquial: "Умение быстро проговорить буквы подряд выручит, когда нужно продиктовать имя, фамилию или e-mail по буквам (épeler).",
+        rule: "Главная ловушка в алфавите: G читается как «жэ» (/ʒe/), а J — как «жи» (/ʒi/). Буква H называется «аш» (/aʃ/), но в словах молчит."
+      },
       // --- СПРИНТ 1 · ШАГ 02: ПРАВИЛА ЧТЕНИЯ И ФОНЕТИКА (10 КАРТОЧЕК) ---
       {
         id: "l1_11", sprint: 1, category: "phonetics", categoryLabel: "Спринт 1 · Фонетика",
@@ -1009,7 +1019,17 @@
         colloquial: "Базовый ориентир времени и счёта.",
         rule: "Отдельно читается /dis/, перед согласной (dix minutes) буква x замолкает (/di/), а перед гласной (dix_heures) связывается как звонкое [з] (/di.z‿œʁ/)."
       },
-
+{
+        id: "l1_30_seq", sprint: 2, category: "numbers", categoryLabel: "Спринт 2 · Цифры 1–10 (Сводка)",
+        frontSub: "Счёт подряд: все цифры от 1 до 10",
+        frontMain: "1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10",
+        example: "Un, deux, trois, quatre, cinq, six, sept, huit, neuf, dix",
+        ipa: "/œ̃ · dø · tʁwa · katʁ · sɛ̃k · sis · sɛt · ɥit · nœf · dis/",
+        audioText: "Un, deux, trois, quatre, cinq, six, sept, huit, neuf, dix.",
+        translation: "Счёт подряд от 1 до 10",
+        colloquial: "Проговаривайте всю десятку на одном дыхании: так диктуют коды домофонов, номера комнат и телефоны.",
+        rule: "При счёте подряд «six» (/sis/) и «dix» (/dis/) произносятся с чётким [с] на конце, а в слове «sept» (/sɛt/) буква «p» не читается."
+      },
       // --- СПРИНТ 2 · ШАГ 04: ЖИВЫЕ ЧАНКИ И РАЗГОВОРНЫЕ ФРАЗЫ (8 КАРТОЧЕК) ---
       {
         id: "l1_31", sprint: 2, category: "chunks", categoryLabel: "Спринт 2 · Живые чанки",
@@ -1403,6 +1423,10 @@
 
       document.getElementById("overviewArchiveCount").textContent = archivedCount;
       document.getElementById("routeArchiveSummary").textContent = `${archivedCount} / ${LESSON_1_CARDS.length}`;
+      const total = LESSON_1_CARDS.length;
+      document.querySelector('[data-filter="all"]').textContent = `Все (${total})`;
+      document.querySelector('[data-filter="alphabet"]').textContent = `Алфавит (${LESSON_1_CARDS.filter(c => c.category === "alphabet").length})`;
+      document.querySelector('[data-filter="numbers"]').textContent = `Цифры 1–10 (${LESSON_1_CARDS.filter(c => c.category === "numbers").length})`;
 
       const container = document.getElementById("routeGridContainer");
       container.innerHTML = "";
