@@ -1621,14 +1621,17 @@
     function buildFullCardSpeech(card) {
       const cleanForTts = (str) => (str || "")
         .replace(/[«»"()]/g, " ")
-        .replace(/([!?])\s*[\/·—–]\s*/g, "$1 ")
-        .replace(/\s*[\/·—–]\s*/g, ". ")
+        .replace(/([!?])\s*[\/·—–-]\s*/g, "$1 ")
+        .replace(/\s*[\/·—–-]\s*/g, ". ")
         .replace(/\s+/g, " ")
         .trim();
 
       const hasCyrillic = (str) => /[а-яё]/i.test(str || "");
 
-      // Для сводных карточек (алфавит A–J подряд или счёт 1–10 подряд)
+      if (card.noLiaison && card.audioText) {
+        return card.audioText;
+      }
+
       if (card.isSequence) {
         if (card.example && !hasCyrillic(card.example)) {
           return cleanForTts(card.example);
@@ -1636,7 +1639,13 @@
         return cleanForTts(card.frontMain);
       }
 
-      // Собираем все французские фразы и примеры, написанные на лицевой стороне карточки
+      if (card.isolatedAudio) {
+        if (card.example && !hasCyrillic(card.example)) {
+          return cleanForTts(card.example);
+        }
+        return cleanForTts(card.audioText);
+      }
+
       const parts = [];
       if (card.frontMain && !hasCyrillic(card.frontMain)) {
         parts.push(cleanForTts(card.frontMain));
