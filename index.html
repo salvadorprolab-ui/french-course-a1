@@ -1618,6 +1618,40 @@
       }
     }
 
+    function buildFullCardSpeech(card) {
+      const cleanForTts = (str) => (str || "")
+        .replace(/[«»"()]/g, " ")
+        .replace(/([!?])\s*[\/·—–]\s*/g, "$1 ")
+        .replace(/\s*[\/·—–]\s*/g, ". ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const hasCyrillic = (str) => /[а-яё]/i.test(str || "");
+
+      // Для сводных карточек (алфавит A–J подряд или счёт 1–10 подряд)
+      if (card.isSequence) {
+        if (card.example && !hasCyrillic(card.example)) {
+          return cleanForTts(card.example);
+        }
+        return cleanForTts(card.frontMain);
+      }
+
+      // Собираем все французские фразы и примеры, написанные на лицевой стороне карточки
+      const parts = [];
+      if (card.frontMain && !hasCyrillic(card.frontMain)) {
+        parts.push(cleanForTts(card.frontMain));
+      }
+      if (card.example && !hasCyrillic(card.example)) {
+        parts.push(cleanForTts(card.example));
+      }
+
+      const uniqueParts = parts.filter((item, idx) =>
+        parts.findIndex(p => p.toLowerCase() === item.toLowerCase()) === idx
+      );
+
+      return uniqueParts.length > 0 ? uniqueParts.join(". ") : cleanForTts(card.audioText);
+    }
+
     function speakCardSequence(card) {
       if (!card) return;
       if (isAudioPlaying) {
@@ -1630,18 +1664,20 @@
       const sessionId = ++speechSessionId;
       setAudioPlayingUI(true);
 
+      const fullSpeechText = buildFullCardSpeech(card);
+
       if (card.isolatedAudio) {
         playSingleUtterance(card.isolatedAudio, sessionId, () => {
           if (sessionId !== speechSessionId) return;
           audioSequenceTimer = setTimeout(() => {
             if (sessionId !== speechSessionId) return;
-            playSingleUtterance(card.audioText, sessionId, () => {
+            playSingleUtterance(fullSpeechText, sessionId, () => {
               if (sessionId === speechSessionId) setAudioPlayingUI(false);
             });
           }, 550);
         });
       } else {
-        playSingleUtterance(card.audioText, sessionId, () => {
+        playSingleUtterance(fullSpeechText, sessionId, () => {
           if (sessionId === speechSessionId) setAudioPlayingUI(false);
         });
       }
