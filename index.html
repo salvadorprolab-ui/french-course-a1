@@ -1621,10 +1621,15 @@
     function buildFullCardSpeech(card) {
       const cleanForTts = (str) => (str || "")
         .replace(/[«»"()]/g, " ")
-        .replace(/([!?])\s*[\/·—–-]\s*/g, "$1 ")
-        .replace(/\s*[\/·—–-]\s*/g, ". ")
+        .replace(/([!?])\s*[\/·—–]\s*/g, "$1 ")
+        .replace(/\s*[\/·—–]\s*/g, ". ")
+        .replace(/\b(c'est|C'est)\s+([A-ZÀ-Ÿ])/g, "$1, $2")
         .replace(/\s+/g, " ")
         .trim();
+
+      if (card.noLiaison && card.audioText) {
+        return cleanForTts(card.audioText);
+      }
 
       const hasCyrillic = (str) => /[а-яё]/i.test(str || "");
 
