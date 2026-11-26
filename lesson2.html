@@ -834,6 +834,13 @@
       }
     });
 
+    document.getElementById("authPasswordInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        document.getElementById("btnLoginSubmit").click();
+      }
+    });
+
     document.getElementById("btnLogoutLk").addEventListener("click", () => {
       stopAllAudio();
       authSession.mode = null;
