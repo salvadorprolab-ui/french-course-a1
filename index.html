@@ -1773,7 +1773,8 @@
           }
           if (step.mode === "locked" && isLesson2Unlocked) {
             triggerHaptic("success");
-            alert(`Поздравляем! Все ${totalCards} карточек Урока 1 в архиве. Урок 2 готов к запуску!`);
+            localStorage.setItem("unlocked_lesson_2", "1");
+            window.location.href = "lesson2.html";
             return;
           }
           openStep(idx);
@@ -2061,7 +2062,7 @@
         if (isTest) {
           document.getElementById("completeTitle").textContent = `Урок 1 полностью сдан! (${totalCards} / ${totalCards})`;
           document.getElementById("btnNextStepAction").textContent = authSession.mode === "full"
-            ? "Вернуться в Маршрут (Урок 2 открыт)"
+            ? "Перейти к Уроку 2"
             : "Открыть Урок 2 (Полный доступ)";
           if (authSession.mode === "demo") {
             setTimeout(() => document.getElementById("promoConversionModal").classList.add("open"), 700);
@@ -2277,6 +2278,9 @@
             openStep(6);
           } else if (authSession.mode === "demo") {
             document.getElementById("promoConversionModal").classList.add("open");
+          } else {
+            localStorage.setItem("unlocked_lesson_2", "1");
+            window.location.href = "lesson2.html";
           }
         } else {
           openStep(nextIdx);
@@ -2290,7 +2294,8 @@
         if (authSession.mode === "demo") {
           document.getElementById("promoConversionModal").classList.add("open");
         } else {
-          showOverview();
+          localStorage.setItem("unlocked_lesson_2", "1");
+          window.location.href = "lesson2.html";
         }
       } else if (currentStepIndex + 1 < ROUTE_STEPS.length) {
         openStep(currentStepIndex + 1);
